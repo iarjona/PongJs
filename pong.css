@@ -1,0 +1,13 @@
+* {
+    padding: 0;
+    margin: 0;
+    background-color: rgb(0, 0, 0);
+}
+
+#gameContainer {
+    border-radius: 8px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 0.75em;
+}
