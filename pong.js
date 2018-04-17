@@ -1,26 +1,39 @@
 var gameStarted = false;
 
+var keyEnter = 13;
+var keyEscape = 27;
 var keyUp = 38;
 var keyDown = 40;
-var keyEnter = 13;
+var keyW = 87;
+var keyS = 83;
+
+var keyUpPressed;
+var keyDownPressed;
+var keyWPressed;
+var keySPressed;
 
 var textFontSize = 32;
 var textFontStroke = 0.75;
 
 var menuOptions = [
+    /*{
+        "title": "Start game!",
+        "mode": "startAI()"
+    },*/
     {
-        "title": "Start local multiplayer!",
-        "mode": "startLocal()"
+        "title": "Play!",
+        "mode": "startOffline()"
     },
     {
-        "title": "Start online multiplayer!",
+        "title": "Play online!",
         "mode": "startOnline()"
     },
     {
-        "title": "Start online battle royale!",
+        "title": "Battle Royale!",
         "mode": "startBattleRoyale()"
-    },
+    }
 ];
+
 var selectedOptionIndex = 0;
 var selectedOptionStyle = ["#60EA41", "#000"];
 var unSelectedOptionStyle = ["#3399FF", "#000"];
@@ -29,36 +42,18 @@ $(document).ready(function () {
     console.log("Game ready!");
 
     $(window).resize(function () {
-        draw();
-    });
-
-    $("body").keydown(function (event) {
-        console.log("Key pressed: " + event.keyCode);
+        initGameContainer();
 
         if (!gameStarted) {
-            if (event.keyCode == keyUp && selectedOptionIndex > 0) {
-                selectedOptionIndex--;
-            } else if (event.keyCode == keyDown && selectedOptionIndex < menuOptions.length - 1) {
-                selectedOptionIndex++;
-            } else if (event.keyCode == keyEnter) {
-                console.log("Calling: " + menuOptions[selectedOptionIndex].mode);
-                eval(menuOptions[selectedOptionIndex].mode);
-            }
+            drawMenu();
+            handleMenu();
         }
-
-        draw();
     });
 
-    draw();
-});
-
-function draw() {
     initGameContainer();
-
-    if (!gameStarted) {
-        drawMenu();
-    }
-}
+    drawMenu();
+    handleMenu();
+});
 
 function initGameContainer() {
     var w = $(window).width() - 25;
@@ -69,6 +64,10 @@ function initGameContainer() {
 
     $("body").empty();
     $("body").append("<canvas id='gameContainer' width='" + w + "' height='" + h + "'></canvas>");
+}
+
+function cleanGameContainer() {
+    $("#gameContainer").clearCanvas();
 }
 
 function drawMenu() {
@@ -132,4 +131,64 @@ function drawMenu() {
             text: menuOptions[i].title
         });
     }
+}
+
+function drawGame() {
+    cleanGameContainer();
+}
+
+function resetHandlers() {
+    $("body").off("keydown")
+    $("body").off("keyup");
+}
+
+function handleMenu() {
+    resetHandlers();
+
+    $("body").keydown(function (event) {
+        console.log("Key pressed: " + event.keyCode);
+
+        if ((event.keyCode == keyUp || event.keyCode == keyW) && selectedOptionIndex > 0) {
+            selectedOptionIndex--;
+            drawMenu();
+        } else if ((event.keyCode == keyDown || event.keyCode == keyS) && selectedOptionIndex < menuOptions.length - 1) {
+            selectedOptionIndex++;
+            drawMenu();
+        } else if (event.keyCode == keyEnter) {
+            gameStarted = true;
+
+            handleGame();
+            eval(menuOptions[selectedOptionIndex].mode);
+        }
+    });
+}
+
+function handleGame() {
+    resetHandlers();
+
+    $("body").keydown(function (event) {
+        if (event.keyCode == keyEscape) {
+            gameStarted = false;
+
+            cleanGameContainer();
+            drawMenu();
+            handleMenu();
+        }
+
+        if (event.keyCode == keyUp) keyUpPressed = true;
+        else if (event.keyCode == keyDown) keyDownPressed = true;
+        else if (event.keyCode == keyW) keyWPressed = true;
+        else if (event.keyCode == keyS) keySPressed = true;
+    });
+
+    $("body").keydown(function (event) {
+        if (event.keyCode == keyUp) keyUpPressed = false;
+        else if (event.keyCode == keyDown) keyDownPressed = false;
+        else if (event.keyCode == keyW) keyWPressed = false;
+        else if (event.keyCode == keyS) keySPressed = false;
+    });
+}
+
+function startOffline() {
+    //TODO
 }
