@@ -1,4 +1,6 @@
 var gameStarted = false;
+var fixedRefreshTime = 1000 / 60;
+var gameLoop;
 
 var keyEnter = 13;
 var keyEscape = 27;
@@ -169,6 +171,7 @@ function handleGame() {
     $("body").keydown(function (event) {
         if (event.keyCode == keyEscape) {
             gameStarted = false;
+            stopGameLoop();
 
             cleanGameContainer();
             drawMenu();
@@ -190,5 +193,16 @@ function handleGame() {
 }
 
 function startOffline() {
-    //TODO
+    startGameLoop();
+}
+
+function startGameLoop() {
+    gameLoop = setInterval(function () {
+        drawGame();
+    }, fixedRefreshTime);
+}
+
+function stopGameLoop() {
+    clearInterval(gameLoop);
+    gameLoop = null;
 }
