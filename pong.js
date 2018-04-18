@@ -17,6 +17,17 @@ var keySPressed;
 var textFontSize = 32;
 var textFontStroke = 0.75;
 
+var padHeight = 100;
+var padSpeed = 15;
+var leftPadPosX;
+var leftPadPosY;
+var rightPadPosX;
+var rightPadPosY;
+var ballPosX;
+var ballPosY;
+var ballSize = 15;
+var blockSize = 25;
+
 var menuOptions = [
     /*{
         "title": "Start game!",
@@ -44,9 +55,8 @@ $(document).ready(function () {
     console.log("Game ready!");
 
     $(window).resize(function () {
-        initGameContainer();
-
         if (!gameStarted) {
+            initGameContainer();
             drawMenu();
             handleMenu();
         }
@@ -137,6 +147,58 @@ function drawMenu() {
 
 function drawGame() {
     cleanGameContainer();
+
+    drawLayout();
+    drawPads();
+    drawBall();
+}
+
+function drawLayout() {
+    $('#gameContainer').drawRect({
+        fillStyle: 'blue',
+        x: 0,
+        y: 0,
+        fromCenter: false,
+        width: $("#gameContainer")[0].width,
+        height: blockSize
+    });
+
+    $('#gameContainer').drawRect({
+        fillStyle: 'blue',
+        x: 0,
+        y: $("#gameContainer")[0].height - blockSize,
+        fromCenter: false,
+        width: $("#gameContainer")[0].width,
+        height: blockSize
+    });
+}
+
+function drawPads() {
+    $('#gameContainer').drawRect({
+        fillStyle: 'cyan',
+        x: leftPadPosX,
+        y: leftPadPosY,
+        fromCenter: false,
+        width: blockSize,
+        height: padHeight
+    });
+
+    $('#gameContainer').drawRect({
+        fillStyle: 'cyan',
+        x: rightPadPosX,
+        y: rightPadPosY,
+        fromCenter: false,
+        width: blockSize,
+        height: padHeight
+    });
+}
+
+function drawBall() {
+    $('#gameContainer').drawArc({
+        fillStyle: 'white',
+        x: ballPosX, y: ballPosY,
+        radius: ballSize
+    });
 }
 
 function resetHandlers() {
@@ -184,7 +246,7 @@ function handleGame() {
         else if (event.keyCode == keyS) keySPressed = true;
     });
 
-    $("body").keydown(function (event) {
+    $("body").keyup(function (event) {
         if (event.keyCode == keyUp) keyUpPressed = false;
         else if (event.keyCode == keyDown) keyDownPressed = false;
         else if (event.keyCode == keyW) keyWPressed = false;
@@ -193,11 +255,29 @@ function handleGame() {
 }
 
 function startOffline() {
-    startGameLoop();
+    configureOffline();
+    startGameLoop(calculateOffline);
 }
 
-function startGameLoop() {
+function configureOffline() {
+    leftPadPosX = 0;
+    leftPadPosY = $("#gameContainer")[0].height / 2 - padHeight / 2;
+    rightPadPosX = $("#gameContainer")[0].width - blockSize;
+    rightPadPosY = leftPadPosY;
+    ballPosX = $("#gameContainer")[0].width / 2;
+    ballPosY = $("#gameContainer")[0].height / 2;
+}
+
+function calculateOffline() {
+    if (keyUpPressed && rightPadPosY > blockSize) rightPadPosY -= padSpeed;
+    if (keyDownPressed && rightPadPosY + padHeight < $("#gameContainer")[0].height - blockSize) rightPadPosY += padSpeed;
+    if (keyWPressed && leftPadPosY > blockSize) leftPadPosY -= padSpeed;
+    if (keySPressed && leftPadPosY + padHeight < $("#gameContainer")[0].height - blockSize) leftPadPosY += padSpeed;
+}
+
+function startGameLoop(calculateGame) {
     gameLoop = setInterval(function () {
+        calculateGame();
         drawGame();
     }, fixedRefreshTime);
 }
