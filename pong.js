@@ -1,4 +1,3 @@
-var gameStarted = false;
 var fixedRefreshTime = 1000 / 60;
 var gameLoop;
 
@@ -23,6 +22,8 @@ var leftPadPosX;
 var leftPadPosY;
 var rightPadPosX;
 var rightPadPosY;
+var ballIncrementX = 10;
+var ballIncrementY = ballIncrementX;
 var ballPosX;
 var ballPosY;
 var ballSize = 15;
@@ -55,7 +56,7 @@ $(document).ready(function () {
     console.log("Game ready!");
 
     $(window).resize(function () {
-        if (!gameStarted) {
+        if (!gameLoop) {
             initGameContainer();
             drawMenu();
             handleMenu();
@@ -219,8 +220,6 @@ function handleMenu() {
             selectedOptionIndex++;
             drawMenu();
         } else if (event.keyCode == keyEnter) {
-            gameStarted = true;
-
             handleGame();
             eval(menuOptions[selectedOptionIndex].mode);
         }
@@ -232,12 +231,13 @@ function handleGame() {
 
     $("body").keydown(function (event) {
         if (event.keyCode == keyEscape) {
-            gameStarted = false;
-            stopGameLoop();
+            if (confirm("Are you sure you want leave game?")) {
+                stopGameLoop();
 
-            cleanGameContainer();
-            drawMenu();
-            handleMenu();
+                cleanGameContainer();
+                drawMenu();
+                handleMenu();
+            }
         }
 
         if (event.keyCode == keyUp) keyUpPressed = true;
@@ -273,6 +273,11 @@ function calculateOffline() {
     if (keyDownPressed && rightPadPosY + padHeight < $("#gameContainer")[0].height - blockSize) rightPadPosY += padSpeed;
     if (keyWPressed && leftPadPosY > blockSize) leftPadPosY -= padSpeed;
     if (keySPressed && leftPadPosY + padHeight < $("#gameContainer")[0].height - blockSize) leftPadPosY += padSpeed;
+
+    if (ballPosX - ballSize <= blockSize || ballPosX + ballSize >= $("#gameContainer")[0].width - blockSize) ballIncrementX *= -1
+    if (ballPosY - ballSize <= blockSize || ballPosY + ballSize >= $("#gameContainer")[0].height - blockSize) ballIncrementY *= -1;
+    ballPosX += ballIncrementX;
+    ballPosY += ballIncrementY;
 }
 
 function startGameLoop(calculateGame) {
