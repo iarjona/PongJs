@@ -29,6 +29,13 @@ var ballPosY;
 var ballSize = 15;
 var blockSize = 25;
 
+var playerOneScore = 0;
+var playerTwoScore = 0;
+var gameLayoutColor;
+var waitForNewRound = 1000;
+var noGoalHitCount;
+var hitCountsToSpeedUp = 2;
+
 var menuOptions = [
     /*{
         "title": "Start game!",
@@ -150,13 +157,37 @@ function drawGame() {
     cleanGameContainer();
 
     drawLayout();
+    drawScore();
     drawPads();
     drawBall();
 }
 
 function drawLayout() {
+    //Background
     $('#gameContainer').drawRect({
-        fillStyle: 'blue',
+        fillStyle: function (layer) {
+            return $(this).createGradient({
+                x1: 0, y1: 0,
+                x2: 0, y2: $('#gameContainer')[0].height,
+                c1: 'black',
+                c2: gameLayoutColor,
+                c3: 'black'
+            });
+        },
+        x: 0, y: 0,
+        width: $("#gameContainer")[0].width,
+        height: $("#gameContainer")[0].height,
+        fromCenter: false
+    });
+
+    $('#gameContainer').drawRect({
+        fillStyle: function (layer) {
+            return $(this).createGradient({
+                x1: 0, y1: layer.y - layer.height / 1.5,
+                x2: 0, y2: layer.y + layer.height * 1.5,
+                c1: '#000', c2: gameLayoutColor
+            });
+        },
         x: 0,
         y: 0,
         fromCenter: false,
@@ -165,32 +196,71 @@ function drawLayout() {
     });
 
     $('#gameContainer').drawRect({
-        fillStyle: 'blue',
+        fillStyle: function (layer) {
+            return $(this).createGradient({
+                x1: 0, y1: layer.y - layer.height / 1.5,
+                x2: 0, y2: layer.y + layer.height * 1.5,
+                c1: '#000', c2: gameLayoutColor
+            });
+        },
         x: 0,
         y: $("#gameContainer")[0].height - blockSize,
         fromCenter: false,
         width: $("#gameContainer")[0].width,
         height: blockSize
     });
+
+    $('#gameContainer').drawLine({
+        strokeStyle: 'white',
+        strokeWidth: 3,
+        strokeDash: [5],
+        strokeDashOffset: 0,
+        x1: $('#gameContainer')[0].width / 2, y1: blockSize,
+        x2: $('#gameContainer')[0].width / 2, y2: $('#gameContainer')[0].height - blockSize
+    });
+}
+
+function drawScore() {
+    $('#gameContainer')
+        .drawText({
+            fillStyle: 'white',
+            x: $('#gameContainer')[0].width * 0.25,
+            y: $('#gameContainer')[0].height / 6,
+            fromCenter: true,
+            fontSize: 50,
+            fontFamily: 'Orbitron',
+            text: playerOneScore
+        })
+        .drawText({
+            fillStyle: 'white',
+            x: $('#gameContainer')[0].width * 0.75,
+            y: $('#gameContainer')[0].height / 6,
+            fromCenter: true,
+            fontSize: 50,
+            fontFamily: 'Orbitron',
+            text: playerTwoScore
+        })
 }
 
 function drawPads() {
     $('#gameContainer').drawRect({
-        fillStyle: 'cyan',
+        fillStyle: 'white',
         x: leftPadPosX,
         y: leftPadPosY,
         fromCenter: false,
         width: blockSize,
-        height: padHeight
+        height: padHeight,
+        cornerRadius: 8
     });
 
     $('#gameContainer').drawRect({
-        fillStyle: 'cyan',
+        fillStyle: 'white',
         x: rightPadPosX,
         y: rightPadPosY,
         fromCenter: false,
         width: blockSize,
-        height: padHeight
+        height: padHeight,
+        cornerRadius: 8
     });
 }
 
@@ -220,10 +290,19 @@ function handleMenu() {
             selectedOptionIndex++;
             drawMenu();
         } else if (event.keyCode == keyEnter) {
+            generateGameLayoutColor();
             handleGame();
             eval(menuOptions[selectedOptionIndex].mode);
         }
     });
+}
+
+function generateGameLayoutColor() {
+    gameLayoutColor =
+        (function (math, a, b) {
+            return (b ? arguments.callee(math, a, b - 1) : '#') +
+                a[math.floor(math.random() * a.length)]
+        })(Math, '0123456789ABCDEF', 5);
 }
 
 function handleGame() {
@@ -266,6 +345,8 @@ function configureOffline() {
     rightPadPosY = leftPadPosY;
     ballPosX = $("#gameContainer")[0].width / 2;
     ballPosY = $("#gameContainer")[0].height / 2;
+
+    noGoalHitCount = 0;
 }
 
 function calculateOffline() {
@@ -274,10 +355,41 @@ function calculateOffline() {
     if (keyWPressed && leftPadPosY > blockSize) leftPadPosY -= padSpeed;
     if (keySPressed && leftPadPosY + padHeight < $("#gameContainer")[0].height - blockSize) leftPadPosY += padSpeed;
 
-    if (ballPosX - ballSize <= blockSize || ballPosX + ballSize >= $("#gameContainer")[0].width - blockSize) ballIncrementX *= -1
     if (ballPosY - ballSize <= blockSize || ballPosY + ballSize >= $("#gameContainer")[0].height - blockSize) ballIncrementY *= -1;
-    ballPosX += ballIncrementX;
-    ballPosY += ballIncrementY;
+
+    var goalDetected = false;
+    if (ballPosX + ballSize >= $("#gameContainer")[0].width - blockSize) {
+        if (rightPadPosY > ballPosY || rightPadPosY + padHeight < ballPosY) {
+            goalDetected = true;
+            playerOneScore++;
+        } else {
+            noGoalHitCount++;
+        }
+
+        ballIncrementX *= -1;
+    }
+    if (ballPosX - ballSize <= blockSize) {
+        if (leftPadPosY > ballPosY || leftPadPosY + padHeight < ballPosY) {
+            goalDetected = true;
+            playerTwoScore++;
+        } else {
+            noGoalHitCount++;
+        }
+
+        ballIncrementX *= -1;
+    }
+    
+    if (goalDetected) {
+        stopGameLoop();
+        configureOffline();
+
+        setTimeout(function () {
+            startGameLoop(calculateOffline);
+        }, waitForNewRound);
+    } else {
+        ballPosX += ballIncrementX;
+        ballPosY += ballIncrementY;
+    }
 }
 
 function startGameLoop(calculateGame) {
