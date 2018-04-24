@@ -29,9 +29,9 @@ var ballPosY;
 var ballSize = 15;
 var blockSize = 25;
 
+var randomColor;
 var playerOneScore = 0;
 var playerTwoScore = 0;
-var gameLayoutColor;
 var waitForNewRound = 1000;
 var noGoalHitCount;
 var hitCountsToSpeedUp = 2;
@@ -108,7 +108,7 @@ function drawMenu() {
 
     //Logo
     $('#gameContainer').drawImage({
-        source: '/pong.png',
+        source: 'img/pong.png',
         x: $("#gameContainer")[0].width - 100 - 15,
         y: $("#gameContainer")[0].height - 100 - 15,
         fromCenter: false
@@ -170,7 +170,7 @@ function drawLayout() {
                 x1: 0, y1: 0,
                 x2: 0, y2: $('#gameContainer')[0].height,
                 c1: 'black',
-                c2: gameLayoutColor,
+                c2: randomColor,
                 c3: 'black'
             });
         },
@@ -185,7 +185,7 @@ function drawLayout() {
             return $(this).createGradient({
                 x1: 0, y1: layer.y - layer.height / 1.5,
                 x2: 0, y2: layer.y + layer.height * 1.5,
-                c1: '#000', c2: gameLayoutColor
+                c1: '#000', c2: randomColor
             });
         },
         x: 0,
@@ -200,7 +200,7 @@ function drawLayout() {
             return $(this).createGradient({
                 x1: 0, y1: layer.y - layer.height / 1.5,
                 x2: 0, y2: layer.y + layer.height * 1.5,
-                c1: '#000', c2: gameLayoutColor
+                c1: '#000', c2: randomColor
             });
         },
         x: 0,
@@ -290,19 +290,11 @@ function handleMenu() {
             selectedOptionIndex++;
             drawMenu();
         } else if (event.keyCode == keyEnter) {
-            generateGameLayoutColor();
+            randomColor = generateRandomColor();
             handleGame();
             eval(menuOptions[selectedOptionIndex].mode);
         }
     });
-}
-
-function generateGameLayoutColor() {
-    gameLayoutColor =
-        (function (math, a, b) {
-            return (b ? arguments.callee(math, a, b - 1) : '#') +
-                a[math.floor(math.random() * a.length)]
-        })(Math, '0123456789ABCDEF', 5);
 }
 
 function handleGame() {
@@ -311,11 +303,7 @@ function handleGame() {
     $("body").keydown(function (event) {
         if (event.keyCode == keyEscape) {
             if (confirm("Are you sure you want leave game?")) {
-                stopGameLoop();
-
-                cleanGameContainer();
-                drawMenu();
-                handleMenu();
+                location.reload();
             }
         }
 
@@ -335,7 +323,10 @@ function handleGame() {
 
 function startOffline() {
     configureOffline();
-    startGameLoop(calculateOffline);
+
+    calculateOffline();
+    drawGame();
+    startGameLoopAfterTimeout(calculateOffline, waitForNewRound);
 }
 
 function configureOffline() {
@@ -378,25 +369,25 @@ function calculateOffline() {
 
         ballIncrementX *= -1;
     }
-    
+
     if (goalDetected) {
         stopGameLoop();
         configureOffline();
 
-        setTimeout(function () {
-            startGameLoop(calculateOffline);
-        }, waitForNewRound);
+        startGameLoopAfterTimeout(calculateOffline, waitForNewRound);
     } else {
         ballPosX += ballIncrementX;
         ballPosY += ballIncrementY;
     }
 }
 
-function startGameLoop(calculateGame) {
-    gameLoop = setInterval(function () {
-        calculateGame();
-        drawGame();
-    }, fixedRefreshTime);
+function startGameLoopAfterTimeout(calculateGame, timeout) {
+    setTimeout(function () {
+        gameLoop = setInterval(function () {
+            calculateGame();
+            drawGame();
+        }, fixedRefreshTime);
+    }, timeout);
 }
 
 function stopGameLoop() {
