@@ -90,6 +90,31 @@ function cleanGameContainer() {
     $("#gameContainer").clearCanvas();
 }
 
+function resetHandlers() {
+    $("body").off("keydown")
+    $("body").off("keyup");
+}
+
+function handleMenu() {
+    resetHandlers();
+
+    $("body").keydown(function (event) {
+        console.log("Key pressed: " + event.keyCode);
+
+        if ((event.keyCode == keyUp || event.keyCode == keyW) && selectedOptionIndex > 0) {
+            selectedOptionIndex--;
+            drawMenu();
+        } else if ((event.keyCode == keyDown || event.keyCode == keyS) && selectedOptionIndex < menuOptions.length - 1) {
+            selectedOptionIndex++;
+            drawMenu();
+        } else if (event.keyCode == keyEnter) {
+            randomColor = generateRandomColor();
+            handleGame();
+            eval(menuOptions[selectedOptionIndex].mode);
+        }
+    });
+}
+
 function drawMenu() {
     //Background
     $('#gameContainer').drawRect({
@@ -151,6 +176,30 @@ function drawMenu() {
             text: menuOptions[i].title
         });
     }
+}
+
+function handleGame() {
+    resetHandlers();
+
+    $("body").keydown(function (event) {
+        if (event.keyCode == keyEscape) {
+            if (confirm("Are you sure you want leave game?")) {
+                location.reload();
+            }
+        }
+
+        if (event.keyCode == keyUp) keyUpPressed = true;
+        else if (event.keyCode == keyDown) keyDownPressed = true;
+        else if (event.keyCode == keyW) keyWPressed = true;
+        else if (event.keyCode == keyS) keySPressed = true;
+    });
+
+    $("body").keyup(function (event) {
+        if (event.keyCode == keyUp) keyUpPressed = false;
+        else if (event.keyCode == keyDown) keyDownPressed = false;
+        else if (event.keyCode == keyW) keyWPressed = false;
+        else if (event.keyCode == keyS) keySPressed = false;
+    });
 }
 
 function drawGame() {
@@ -272,59 +321,23 @@ function drawBall() {
     });
 }
 
-function resetHandlers() {
-    $("body").off("keydown")
-    $("body").off("keyup");
+function startGameLoopAfterTimeout(calculateGame, timeout) {
+    setTimeout(function () {
+        gameLoop = setInterval(function () {
+            calculateGame();
+            drawGame();
+        }, fixedRefreshTime);
+    }, timeout);
 }
 
-function handleMenu() {
-    resetHandlers();
-
-    $("body").keydown(function (event) {
-        console.log("Key pressed: " + event.keyCode);
-
-        if ((event.keyCode == keyUp || event.keyCode == keyW) && selectedOptionIndex > 0) {
-            selectedOptionIndex--;
-            drawMenu();
-        } else if ((event.keyCode == keyDown || event.keyCode == keyS) && selectedOptionIndex < menuOptions.length - 1) {
-            selectedOptionIndex++;
-            drawMenu();
-        } else if (event.keyCode == keyEnter) {
-            randomColor = generateRandomColor();
-            handleGame();
-            eval(menuOptions[selectedOptionIndex].mode);
-        }
-    });
-}
-
-function handleGame() {
-    resetHandlers();
-
-    $("body").keydown(function (event) {
-        if (event.keyCode == keyEscape) {
-            if (confirm("Are you sure you want leave game?")) {
-                location.reload();
-            }
-        }
-
-        if (event.keyCode == keyUp) keyUpPressed = true;
-        else if (event.keyCode == keyDown) keyDownPressed = true;
-        else if (event.keyCode == keyW) keyWPressed = true;
-        else if (event.keyCode == keyS) keySPressed = true;
-    });
-
-    $("body").keyup(function (event) {
-        if (event.keyCode == keyUp) keyUpPressed = false;
-        else if (event.keyCode == keyDown) keyDownPressed = false;
-        else if (event.keyCode == keyW) keyWPressed = false;
-        else if (event.keyCode == keyS) keySPressed = false;
-    });
+function stopGameLoop() {
+    clearInterval(gameLoop);
+    gameLoop = null;
 }
 
 function startOffline() {
     configureOffline();
 
-    calculateOffline();
     drawGame();
     startGameLoopAfterTimeout(calculateOffline, waitForNewRound);
 }
@@ -379,18 +392,4 @@ function calculateOffline() {
         ballPosX += ballIncrementX;
         ballPosY += ballIncrementY;
     }
-}
-
-function startGameLoopAfterTimeout(calculateGame, timeout) {
-    setTimeout(function () {
-        gameLoop = setInterval(function () {
-            calculateGame();
-            drawGame();
-        }, fixedRefreshTime);
-    }, timeout);
-}
-
-function stopGameLoop() {
-    clearInterval(gameLoop);
-    gameLoop = null;
 }
