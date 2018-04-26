@@ -366,6 +366,14 @@ function calculateOffline() {
         if (rightPadPosY > ballPosY || rightPadPosY + padHeight < ballPosY) {
             goalDetected = true;
             playerOneScore++;
+			new Noty({
+				type: 'info',
+				layout: 'topCenter',
+				theme: 'metroui',
+				text: 'Goal for player one!',
+				timeout: 1000, 
+				progressBar: false
+			}).show();
         } else {
             noGoalHitCount++;
         }
@@ -376,6 +384,14 @@ function calculateOffline() {
         if (leftPadPosY > ballPosY || leftPadPosY + padHeight < ballPosY) {
             goalDetected = true;
             playerTwoScore++;
+			new Noty({
+				type: 'info',
+				layout: 'topCenter',
+				theme: 'metroui',
+				text: 'Goal for player two!',
+				timeout: 1000, 
+				progressBar: false
+			}).show();
         } else {
             noGoalHitCount++;
         }
