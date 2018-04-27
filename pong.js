@@ -24,6 +24,7 @@ var rightPadPosX;
 var rightPadPosY;
 var ballIncrementX = 10;
 var ballIncrementY = ballIncrementX;
+var speedIncrement = 1.0;
 var ballPosX;
 var ballPosY;
 var ballSize = 15;
@@ -34,7 +35,7 @@ var playerOneScore = 0;
 var playerTwoScore = 0;
 var waitForNewRound = 1000;
 var noGoalHitCount;
-var hitCountsToSpeedUp = 2;
+var hitCountsToSpeedUp = 5;
 
 var menuOptions = [
     /*{
@@ -366,14 +367,8 @@ function calculateOffline() {
         if (rightPadPosY > ballPosY || rightPadPosY + padHeight < ballPosY) {
             goalDetected = true;
             playerOneScore++;
-			new Noty({
-				type: 'info',
-				layout: 'topCenter',
-				theme: 'metroui',
-				text: 'Goal for player one!',
-				timeout: 1000, 
-				progressBar: false
-			}).show();
+
+			showAlertWithDelay("Goal for player one!", 1000);
         } else {
             noGoalHitCount++;
         }
@@ -384,19 +379,18 @@ function calculateOffline() {
         if (leftPadPosY > ballPosY || leftPadPosY + padHeight < ballPosY) {
             goalDetected = true;
             playerTwoScore++;
-			new Noty({
-				type: 'info',
-				layout: 'topCenter',
-				theme: 'metroui',
-				text: 'Goal for player two!',
-				timeout: 1000, 
-				progressBar: false
-			}).show();
+
+            showAlertWithDelay("Goal for player two!", 1000);
         } else {
             noGoalHitCount++;
         }
 
         ballIncrementX *= -1;
+    }
+
+    if (noGoalHitCount == hitCountsToSpeedUp) {
+        noGoalHitCount = 0;
+        speedIncrement += 0.5;
     }
 
     if (goalDetected) {
@@ -405,7 +399,7 @@ function calculateOffline() {
 
         startGameLoopAfterTimeout(calculateOffline, waitForNewRound);
     } else {
-        ballPosX += ballIncrementX;
-        ballPosY += ballIncrementY;
+        ballPosX += ballIncrementX * speedIncrement;
+        ballPosY += ballIncrementY * speedIncrement;
     }
 }
