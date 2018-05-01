@@ -37,16 +37,30 @@ function showNoty(notyType, msgText, delay) {
 }
 
 function getConfirmationWithDelay(msgText, delay, confirmCallback, denyCallback) {
-    return new Noty({
-        text: msgText,
-        type: 'info',
-        layout: 'topCenter',
-        theme: 'metroui',
-        timeout: delay,
-        progressBar: true,
-        buttons: [
-            Noty.button('Yes', 'btn btn-success', confirmCallback),
-            Noty.button('No', 'btn btn-error', denyCallback)
-        ]
-    })
+    if (denyCallback) {
+        return new Noty({
+            text: msgText,
+            type: 'info',
+            layout: 'topCenter',
+            theme: 'metroui',
+            timeout: delay,
+            progressBar: true,
+            buttons: [
+                Noty.button('Yes', 'btn btn-success', confirmCallback),
+                Noty.button('No', 'btn btn-error', denyCallback)
+            ]
+        });
+    } else {
+        return new Noty({
+            text: msgText,
+            type: 'info',
+            layout: 'topCenter',
+            theme: 'metroui',
+            timeout: delay,
+            progressBar: true,
+            buttons: [
+                Noty.button('Yes', 'btn btn-success', confirmCallback)
+            ]
+        });
+    }
 }

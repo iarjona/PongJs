@@ -58,8 +58,6 @@ var menuOptions = [
 ];
 
 $(document).ready(function () {
-    console.log("Game ready!");
-
     $(window).resize(function () {
         if (!gameLoop) {
             initGameContainer();
@@ -182,12 +180,11 @@ function handleGame() {
 
     $("body").keydown(function (event) {
         if (event.keyCode == escapeKeyCode) {
-            var conf = getConfirmationWithDelay("Do you want to leave the game?", 3000,
+            var conf = getConfirmationWithDelay("Do you want to leave the game?", 3000, 
                 function () {
                     location.reload();
-                }, function () {
-                    conf.close();
-                });
+                }
+            );
 
             conf.show();
         }
@@ -370,43 +367,39 @@ function calculateOffline() {
 
     if (ballPosY - ballSize <= blockSize || ballPosY + ballSize >= $("#gameContainer")[0].height - blockSize) ballIncrementY *= -1;
 
-    var goalDetected = false;
-    if (ballPosX + ballSize >= $("#gameContainer")[0].width - blockSize) {
-        if (rightPadPosY > ballPosY || rightPadPosY + padHeight < ballPosY) {
-            goalDetected = true;
-            playerOneScore++;
-
-            showAlertWithDelay("Goal for player one!", 1000);
-        } else {
-            noGoalHitsCount++;
+    var collisionOnRight = ballPosX + ballSize >= $("#gameContainer")[0].width - blockSize;
+    var collisionOnLeft = ballPosX - ballSize <= blockSize;
+    var isGoalOnRight = rightPadPosY > ballPosY || rightPadPosY + padHeight < ballPosY;
+    var isGoalOnLeft = leftPadPosY > ballPosY || leftPadPosY + padHeight < ballPosY;
+    
+    var goal = false;
+    if(collisionOnRight && isGoalOnRight){
+        goal = true;
+        playerOneScore++;
+        showAlertWithDelay("Goal for player one!", 1000);
+    }else if(collisionOnLeft && isGoalOnLeft){
+        goal = true;
+        playerTwoScore++;
+        showAlertWithDelay("Goal for player two!", 1000);
+    }else if((collisionOnRight && !isGoalOnRight) || (collisionOnLeft && !isGoalOnLeft)){
+        noGoalHitsCount++;
+        
+        if (noGoalHitsCount == noGoalHitsToSpeedUp) {
+            noGoalHitsCount = 0;
+            speedIncrement += 0.5;
+            showWarningWithDelay("Game speed increased! [" + speedIncrement * 100 + " %]", 1000);
         }
-
+    }
+    
+    if(collisionOnRight || collisionOnLeft){
         ballIncrementX *= -1;
     }
-    if (ballPosX - ballSize <= blockSize) {
-        if (leftPadPosY > ballPosY || leftPadPosY + padHeight < ballPosY) {
-            goalDetected = true;
-            playerTwoScore++;
 
-            showAlertWithDelay("Goal for player two!", 1000);
-        } else {
-            noGoalHitsCount++;
-        }
-
-        ballIncrementX *= -1;
-    }
-
-    if (noGoalHitsCount == noGoalHitsToSpeedUp) {
-        noGoalHitsCount = 0;
-        speedIncrement += 0.5;
-        showWarningWithDelay("Game speed increased! [" + speedIncrement * 100 + " %]", 1000);
-    }
-
-    if (goalDetected) {
+    if (goal) {
         noGoalHitsCount = 0;
         speedIncrement = 1.0;
         ballPosX = $("#gameContainer")[0].width / 2;
-        
+
         startGameLoopAfterTimeout(calculateOffline, waitForNewRound);
     } else {
         ballPosX += ballIncrementX * speedIncrement;
