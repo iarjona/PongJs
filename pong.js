@@ -184,9 +184,14 @@ function handleGame() {
 
     $("body").keydown(function (event) {
         if (event.keyCode == keyEscape) {
-            if (confirm("Are you sure you want leave game?")) {
-                location.reload();
-            }
+            var conf = getConfirmationWithDelay("Do you want to leave the game?", 3000,
+                function () {
+                    location.reload();
+                }, function () {
+                    conf.close();
+                });
+
+            conf.show();
         }
 
         if (event.keyCode == keyUp) keyUpPressed = true;
@@ -355,10 +360,15 @@ function configureOffline() {
 }
 
 function calculateOffline() {
-    if (keyUpPressed && rightPadPosY > blockSize) rightPadPosY -= padSpeed;
-    if (keyDownPressed && rightPadPosY + padHeight < $("#gameContainer")[0].height - blockSize) rightPadPosY += padSpeed;
-    if (keyWPressed && leftPadPosY > blockSize) leftPadPosY -= padSpeed;
-    if (keySPressed && leftPadPosY + padHeight < $("#gameContainer")[0].height - blockSize) leftPadPosY += padSpeed;
+    if (keyWPressed) leftPadPosY -= padSpeed;
+    if (keySPressed) leftPadPosY += padSpeed;
+    if (keyUpPressed) rightPadPosY -= padSpeed;
+    if (keyDownPressed) rightPadPosY += padSpeed;
+
+    if (rightPadPosY <= blockSize) rightPadPosY = blockSize;
+    if (rightPadPosY + padHeight >= $("#gameContainer")[0].height - blockSize) rightPadPosY = $("#gameContainer")[0].height - blockSize - padHeight;
+    if (leftPadPosY <= blockSize) leftPadPosY = blockSize;
+    if (leftPadPosY + padHeight >= $("#gameContainer")[0].height - blockSize) leftPadPosY = $("#gameContainer")[0].height - blockSize - padHeight;
 
     if (ballPosY - ballSize <= blockSize || ballPosY + ballSize >= $("#gameContainer")[0].height - blockSize) ballIncrementY *= -1;
 
@@ -368,7 +378,7 @@ function calculateOffline() {
             goalDetected = true;
             playerOneScore++;
 
-			showAlertWithDelay("Goal for player one!", 1000);
+            showAlertWithDelay("Goal for player one!", 1000);
         } else {
             noGoalHitCount++;
         }
@@ -391,6 +401,7 @@ function calculateOffline() {
     if (noGoalHitCount == hitCountsToSpeedUp) {
         noGoalHitCount = 0;
         speedIncrement += 0.5;
+        showWarningWithDelay("Game speed increased! [" + speedIncrement * 100 + " %]", 1000);
     }
 
     if (goalDetected) {
@@ -401,5 +412,10 @@ function calculateOffline() {
     } else {
         ballPosX += ballIncrementX * speedIncrement;
         ballPosY += ballIncrementY * speedIncrement;
+
+        if (ballPosY + ballSize >= $("#gameContainer")[0].height - blockSize) ballPosY = $("#gameContainer")[0].height - blockSize - ballSize;
+        else if (ballPosY - ballSize <= blockSize) ballPosY = blockSize + ballSize;
+        if (ballPosX + ballSize >= $("#gameContainer")[0].width - blockSize) ballPosX = $("#gameContainer")[0].width - blockSize - ballSize;
+        else if (ballPosX - ballSize <= blockSize) ballPosX = blockSize + ballSize;
     }
 }
