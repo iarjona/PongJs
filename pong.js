@@ -1,20 +1,14 @@
 var fixedRefreshTime = 1000 / 60;
 var gameLoop;
 
-var keyEnter = 13;
-var keyEscape = 27;
-var keyUp = 38;
-var keyDown = 40;
-var keyW = 87;
-var keyS = 83;
+var keyUpPressed, keyDownPressed, keyWPressed, keySPressed;
 
-var keyUpPressed;
-var keyDownPressed;
-var keyWPressed;
-var keySPressed;
-
-var textFontSize = 32;
-var textFontStroke = 0.75;
+var enterKeyCode = 13;
+var escapeKeyCode = 27;
+var upKeyCode = 38;
+var downKeyCode = 40;
+var wKeyCode = 87;
+var sKeyCode = 83;
 
 var padHeight = 100;
 var padSpeed = 15;
@@ -30,12 +24,19 @@ var ballPosY;
 var ballSize = 15;
 var blockSize = 25;
 
+var textFontSize = 32;
+var textFontStroke = 0.75;
+
 var randomColor;
 var playerOneScore = 0;
 var playerTwoScore = 0;
 var waitForNewRound = 1000;
-var noGoalHitCount;
-var hitCountsToSpeedUp = 5;
+var noGoalHitsCount = 0;
+var noGoalHitsToSpeedUp = 5;
+
+var selectedOptionIndex = 0;
+var selectedOptionStyle = ["#60EA41", "#000"];
+var unSelectedOptionStyle = ["#3399FF", "#000"];
 
 var menuOptions = [
     /*{
@@ -55,10 +56,6 @@ var menuOptions = [
         "mode": "startBattleRoyale()"
     }
 ];
-
-var selectedOptionIndex = 0;
-var selectedOptionStyle = ["#60EA41", "#000"];
-var unSelectedOptionStyle = ["#3399FF", "#000"];
 
 $(document).ready(function () {
     console.log("Game ready!");
@@ -102,14 +99,15 @@ function handleMenu() {
     $("body").keydown(function (event) {
         console.log("Key pressed: " + event.keyCode);
 
-        if ((event.keyCode == keyUp || event.keyCode == keyW) && selectedOptionIndex > 0) {
+        if ((event.keyCode == upKeyCode || event.keyCode == wKeyCode) && selectedOptionIndex > 0) {
             selectedOptionIndex--;
             drawMenu();
-        } else if ((event.keyCode == keyDown || event.keyCode == keyS) && selectedOptionIndex < menuOptions.length - 1) {
+        } else if ((event.keyCode == downKeyCode || event.keyCode == sKeyCode) && selectedOptionIndex < menuOptions.length - 1) {
             selectedOptionIndex++;
             drawMenu();
-        } else if (event.keyCode == keyEnter) {
+        } else if (event.keyCode == enterKeyCode) {
             randomColor = generateRandomColor();
+
             handleGame();
             eval(menuOptions[selectedOptionIndex].mode);
         }
@@ -183,7 +181,7 @@ function handleGame() {
     resetHandlers();
 
     $("body").keydown(function (event) {
-        if (event.keyCode == keyEscape) {
+        if (event.keyCode == escapeKeyCode) {
             var conf = getConfirmationWithDelay("Do you want to leave the game?", 3000,
                 function () {
                     location.reload();
@@ -194,17 +192,17 @@ function handleGame() {
             conf.show();
         }
 
-        if (event.keyCode == keyUp) keyUpPressed = true;
-        else if (event.keyCode == keyDown) keyDownPressed = true;
-        else if (event.keyCode == keyW) keyWPressed = true;
-        else if (event.keyCode == keyS) keySPressed = true;
+        if (event.keyCode == upKeyCode) keyUpPressed = true;
+        else if (event.keyCode == downKeyCode) keyDownPressed = true;
+        else if (event.keyCode == wKeyCode) keyWPressed = true;
+        else if (event.keyCode == sKeyCode) keySPressed = true;
     });
 
     $("body").keyup(function (event) {
-        if (event.keyCode == keyUp) keyUpPressed = false;
-        else if (event.keyCode == keyDown) keyDownPressed = false;
-        else if (event.keyCode == keyW) keyWPressed = false;
-        else if (event.keyCode == keyS) keySPressed = false;
+        if (event.keyCode == upKeyCode) keyUpPressed = false;
+        else if (event.keyCode == downKeyCode) keyDownPressed = false;
+        else if (event.keyCode == wKeyCode) keyWPressed = false;
+        else if (event.keyCode == sKeyCode) keySPressed = false;
     });
 }
 
@@ -328,6 +326,8 @@ function drawBall() {
 }
 
 function startGameLoopAfterTimeout(calculateGame, timeout) {
+    stopGameLoop();
+
     setTimeout(function () {
         gameLoop = setInterval(function () {
             calculateGame();
@@ -355,8 +355,6 @@ function configureOffline() {
     rightPadPosY = leftPadPosY;
     ballPosX = $("#gameContainer")[0].width / 2;
     ballPosY = $("#gameContainer")[0].height / 2;
-
-    noGoalHitCount = 0;
 }
 
 function calculateOffline() {
@@ -380,7 +378,7 @@ function calculateOffline() {
 
             showAlertWithDelay("Goal for player one!", 1000);
         } else {
-            noGoalHitCount++;
+            noGoalHitsCount++;
         }
 
         ballIncrementX *= -1;
@@ -392,22 +390,23 @@ function calculateOffline() {
 
             showAlertWithDelay("Goal for player two!", 1000);
         } else {
-            noGoalHitCount++;
+            noGoalHitsCount++;
         }
 
         ballIncrementX *= -1;
     }
 
-    if (noGoalHitCount == hitCountsToSpeedUp) {
-        noGoalHitCount = 0;
+    if (noGoalHitsCount == noGoalHitsToSpeedUp) {
+        noGoalHitsCount = 0;
         speedIncrement += 0.5;
         showWarningWithDelay("Game speed increased! [" + speedIncrement * 100 + " %]", 1000);
     }
 
     if (goalDetected) {
-        stopGameLoop();
-        configureOffline();
-
+        noGoalHitsCount = 0;
+        speedIncrement = 1.0;
+        ballPosX = $("#gameContainer")[0].width / 2;
+        
         startGameLoopAfterTimeout(calculateOffline, waitForNewRound);
     } else {
         ballPosX += ballIncrementX * speedIncrement;
