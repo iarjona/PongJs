@@ -23,9 +23,7 @@ function drawLayout() {
         width: $("#gameContainer")[0].width,
         height: $("#gameContainer")[0].height,
         fromCenter: false
-    });
-
-    $('#gameContainer').drawRect({
+    }).drawRect({
         fillStyle: function (layer) {
             return $(this).createGradient({
                 x1: 0, y1: layer.y - layer.height / 1.5,
@@ -38,9 +36,7 @@ function drawLayout() {
         fromCenter: false,
         width: $("#gameContainer")[0].width,
         height: blockSize
-    });
-
-    $('#gameContainer').drawRect({
+    }).drawRect({
         fillStyle: function (layer) {
             return $(this).createGradient({
                 x1: 0, y1: layer.y - layer.height / 1.5,
@@ -53,9 +49,7 @@ function drawLayout() {
         fromCenter: false,
         width: $("#gameContainer")[0].width,
         height: blockSize
-    });
-
-    $('#gameContainer').drawLine({
+    }).drawLine({
         strokeStyle: 'white',
         strokeWidth: 3,
         strokeDash: [5],
@@ -96,9 +90,7 @@ function drawPads() {
         width: blockSize,
         height: padHeight,
         cornerRadius: 8
-    });
-
-    $('#gameContainer').drawRect({
+    }).drawRect({
         fillStyle: 'white',
         x: rightPadPosX,
         y: rightPadPosY,

@@ -12,10 +12,7 @@ function drawMenu() {
         width: $("#gameContainer")[0].width,
         height: $("#gameContainer")[0].height,
         fromCenter: false
-    });
-
-    //Logo
-    $('#gameContainer').drawImage({
+    }).drawImage({ //Logo
         source: 'img/pong.png',
         x: $("#gameContainer")[0].width - 100 - 15,
         y: $("#gameContainer")[0].height - 100 - 15,
