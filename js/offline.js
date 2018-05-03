@@ -1,8 +1,10 @@
-function startOffline() {
+function startOfflineWithAI(isAIEnabled) {
     configureOffline();
 
     drawGame();
-    startGameLoopAfterTimeout(calculateOffline, waitForNewRound);
+    startGameLoopAfterTimeout(function () {
+        return calculateOffline(isAIEnabled);
+    }, waitForNewRound);
 }
 
 function configureOffline() {
@@ -14,11 +16,15 @@ function configureOffline() {
     ballPosY = $("#gameContainer")[0].height / 2;
 }
 
-function calculateOffline() {
+function calculateOffline(isAIEnabled) {
     if (keyWPressed) leftPadPosY -= padSpeed;
     if (keySPressed) leftPadPosY += padSpeed;
-    if (keyUpPressed) rightPadPosY -= padSpeed;
-    if (keyDownPressed) rightPadPosY += padSpeed;
+    if (isAIEnabled) {
+        calculateNextAIMove();
+    } else {
+        if (keyUpPressed) rightPadPosY -= padSpeed;
+        if (keyDownPressed) rightPadPosY += padSpeed;
+    }
 
     if (rightPadPosY <= blockSize) rightPadPosY = blockSize;
     if (rightPadPosY + padHeight >= $("#gameContainer")[0].height - blockSize) rightPadPosY = $("#gameContainer")[0].height - blockSize - padHeight;
@@ -40,7 +46,7 @@ function calculateOffline() {
     } else if (collisionOnLeft && isGoalOnLeft) {
         goal = true;
         playerTwoScore++;
-        showAlertWithDelay("Goal for player two!", 1000);
+        isAIEnabled ? showAlertWithDelay("The computer is owning you!", 1000) : showAlertWithDelay("Goal for player two!", 1000);
     } else if ((collisionOnRight && !isGoalOnRight) || (collisionOnLeft && !isGoalOnLeft)) {
         noGoalHitsCount++;
 
@@ -60,7 +66,9 @@ function calculateOffline() {
         speedIncrement = 1.0;
         ballPosX = $("#gameContainer")[0].width / 2;
 
-        startGameLoopAfterTimeout(calculateOffline, waitForNewRound);
+        startGameLoopAfterTimeout(function () {
+            return calculateOffline(isAIEnabled);
+        }, waitForNewRound);
     } else {
         ballPosX += ballIncrementX * speedIncrement;
         ballPosY += ballIncrementY * speedIncrement;
@@ -70,4 +78,9 @@ function calculateOffline() {
         if (ballPosX + ballSize >= $("#gameContainer")[0].width - blockSize) ballPosX = $("#gameContainer")[0].width - blockSize - ballSize;
         else if (ballPosX - ballSize <= blockSize) ballPosX = blockSize + ballSize;
     }
+}
+
+function calculateNextAIMove() {
+    //TODO Do a real AI.
+    rightPadPosY = ballPosY - padHeight / 2;
 }

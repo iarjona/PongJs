@@ -39,13 +39,13 @@ var selectedOptionStyle = ["#60EA41", "#000"];
 var unSelectedOptionStyle = ["#3399FF", "#000"];
 
 var menuOptions = [
-    /*{
-        "title": "Start game!",
-        "mode": "startAI()"
-    },*/
     {
         "title": "Play!",
-        "mode": "startOffline()"
+        "mode": "startOfflineWithAI(true)"
+    },
+    {
+        "title": "Play with friends!",
+        "mode": "startOfflineWithAI(false)"
     },
     {
         "title": "Play online!",
