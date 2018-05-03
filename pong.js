@@ -117,7 +117,7 @@ function handleGame() {
 
     $("body").keydown(function (event) {
         if (event.keyCode == escapeKeyCode) {
-            var conf = getConfirmationWithDelay("Do you want to leave the game?", 3000, 
+            var conf = getConfirmationWithDelay("Do you want to leave the game?", 3000,
                 function () {
                     location.reload();
                 }

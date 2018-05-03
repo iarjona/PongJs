@@ -83,8 +83,6 @@ function drawScore() {
 
 function drawPads() {
     $('#gameContainer').drawRect({
-        layer: true,
-        click: function(event){console.log(event);},
         fillStyle: 'white',
         x: leftPadPosX,
         y: leftPadPosY,
