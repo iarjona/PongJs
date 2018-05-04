@@ -17,11 +17,13 @@ function configureOffline() {
 }
 
 function calculateOffline(isAIEnabled) {
-    if (keyWPressed) leftPadPosY -= padSpeed;
-    if (keySPressed) leftPadPosY += padSpeed;
     if (isAIEnabled) {
+        if (keyWPressed || keyUpPressed) leftPadPosY -= padSpeed;
+        if (keySPressed || keyDownPressed) leftPadPosY += padSpeed;
         calculateNextAIMove();
     } else {
+        if (keyWPressed) leftPadPosY -= padSpeed;
+        if (keySPressed) leftPadPosY += padSpeed;
         if (keyUpPressed) rightPadPosY -= padSpeed;
         if (keyDownPressed) rightPadPosY += padSpeed;
     }
