@@ -35,41 +35,34 @@ function calculateOffline(isAIEnabled) {
 
     var collisionOnRight = ballPosX + ballSize >= $("#gameContainer")[0].width - blockSize;
     var collisionOnLeft = ballPosX - ballSize <= blockSize;
-    var isGoalOnRight = rightPadPosY > ballPosY || rightPadPosY + padHeight < ballPosY;
-    var isGoalOnLeft = leftPadPosY > ballPosY || leftPadPosY + padHeight < ballPosY;
+    var isGoalOnRight = collisionOnRight && (rightPadPosY > ballPosY || rightPadPosY + padHeight < ballPosY);
+    var isGoalOnLeft = collisionOnLeft && (leftPadPosY > ballPosY || leftPadPosY + padHeight < ballPosY);
 
-    var goal = false;
-    if (collisionOnRight && isGoalOnRight) {
-        goal = true;
+    if (isGoalOnRight) {
         playerOneScore++;
         showAlertWithDelay("Goal for player one!", 1000);
-    } else if (collisionOnLeft && isGoalOnLeft) {
-        goal = true;
+        fireGoalEvents(isAIEnabled);
+    } else if (isGoalOnLeft) {
         playerTwoScore++;
         isAIEnabled ? showAlertWithDelay("The computer is owning you!", 1000) : showAlertWithDelay("Goal for player two!", 1000);
-    } else if ((collisionOnRight && !isGoalOnRight) || (collisionOnLeft && !isGoalOnLeft)) {
-        noGoalHitsCount++;
+        fireGoalEvents(isAIEnabled);
+    } else if (collisionOnRight) {
+        if (ballPosY <= rightPadPosY + padHeight / 2) {
 
-        if (noGoalHitsCount == noGoalHitsToSpeedUp) {
-            noGoalHitsCount = 0;
-            speedIncrement += 0.5;
-            showWarningWithDelay("Game speed increased! [" + speedIncrement * 100 + " %]", 1000);
+        } else {
+
         }
+        fireNoGoalEvents();
+    } else if (collisionOnLeft) {
+        if (ballPosY <= leftPadPosY + padHeight / 2) {
+
+        } else {
+
+        }
+        fireNoGoalEvents();
     }
 
-    if (collisionOnRight || collisionOnLeft) {
-        ballIncrementX *= -1;
-    }
-
-    if (goal) {
-        noGoalHitsCount = 0;
-        speedIncrement = 1.0;
-        ballPosX = $("#gameContainer")[0].width / 2;
-
-        startGameLoopAfterTimeout(function () {
-            return calculateOffline(isAIEnabled);
-        }, waitForNewRound);
-    } else {
+    if (!isGoalOnLeft && !isGoalOnRight) {
         ballPosX += ballIncrementX * speedIncrement;
         ballPosY += ballIncrementY * speedIncrement;
 
@@ -78,6 +71,30 @@ function calculateOffline(isAIEnabled) {
         if (ballPosX + ballSize >= $("#gameContainer")[0].width - blockSize) ballPosX = $("#gameContainer")[0].width - blockSize - ballSize;
         else if (ballPosX - ballSize <= blockSize) ballPosX = blockSize + ballSize;
     }
+}
+
+function fireNoGoalEvents() {
+    noGoalHitsCount++;
+
+    if (noGoalHitsCount == noGoalHitsToSpeedUp) {
+        noGoalHitsCount = 0;
+        speedIncrement += 0.5;
+        showWarningWithDelay("Game speed increased! [" + speedIncrement * 100 + " %]", 1000);
+    }
+
+    ballIncrementX *= -1;
+}
+
+function fireGoalEvents(isAIEnabled) {
+    noGoalHitsCount = 0;
+    speedIncrement = 1.0;
+    ballPosX = $("#gameContainer")[0].width / 2;
+
+    ballIncrementX *= -1;
+
+    startGameLoopAfterTimeout(function () {
+        return calculateOffline(isAIEnabled);
+    }, waitForNewRound);
 }
 
 function calculateNextAIMove() {
