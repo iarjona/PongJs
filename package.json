@@ -1,0 +1,26 @@
+{
+  "name": "pongjs",
+  "version": "1.0.0",
+  "description": "Basic Javascript videogame using jQuery + jCanvas.",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/iarjona/PongJs.git"
+  },
+  "author": "iarjona",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/iarjona/PongJs/issues"
+  },
+  "homepage": "https://github.com/iarjona/PongJs#readme",
+  "dependencies": {
+    "express": "^4.16.3",
+    "jcanvas": "^21.0.1",
+    "jquery": "^3.3.1",
+    "noty": "^3.2.0-beta",
+    "ws": "^5.2.0"
+  }
+}
