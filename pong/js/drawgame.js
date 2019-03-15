@@ -1,10 +1,16 @@
-function drawGame() {
+function drawGame(gameData) {
     cleanGameContainer();
 
-    drawLayout();
-    drawScore();
+    if (gameData) {
+        leftPadPosX = gameData.leftPadPosX;
+        rightPadPosX = gameData.rightPadPosX;
+        leftPadPosY = gameData.leftPadPosY;
+        rightPadPosY = gameData.rightPadPosY;
+    }
+    //drawLayout();
+    //drawScore();
     drawPads();
-    drawBall();
+    //drawBall();
 }
 
 function drawLayout() {
