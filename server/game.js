@@ -24,9 +24,12 @@ function start(gameData) {
     
     //Initial config.
     int.padSpeed = 15;
+    int.noGoalHitsCount = 0;
+    int.noGoalHitsToSpeedUp = 5;
     ext.ballIncrementX = 10;
     ext.ballIncrementY = ext.ballIncrementX;
     ext.speedIncrement = 1.0;
+    ext.pendingNotifications = [];
 
     ext.windowWidth = 800;
     ext.windowHeight = 600;
@@ -82,8 +85,12 @@ function start(gameData) {
 
         if (isGoalOnRight) {
             ext.playerOneScore++;
-            //showAlertWithDelay("Goal for player one!", 1000);
-            //fireGoalEvents();
+            ext.pendingNotifications.push({text:'Goal for left-side player!', type:'alert', delay:1000});
+
+            int.noGoalHitsCount = 0;
+            int.speedIncrement = 1.0;
+            ext.ballIncrementX *= -1;
+
             ext.leftPadPosX = 0;
             ext.leftPadPosY = ext.windowHeight / 2 - ext.padHeight / 2;
             ext.rightPadPosX = ext.windowWidth - ext.blockSize;
@@ -92,16 +99,27 @@ function start(gameData) {
             ext.ballPosY = ext.windowHeight / 2;
         } else if (isGoalOnLeft) {
             ext.playerTwoScore++;
-            //showAlertWithDelay("Goal for player two!", 1000);
-            //fireGoalEvents();
+            ext.pendingNotifications.push({text:'Goal for right-side player!', type:'alert', delay:1000});
+
+            int.noGoalHitsCount = 0;
+            int.speedIncrement = 1.0;
+            ext.ballIncrementX *= -1;
+
             ext.leftPadPosX = 0;
             ext.leftPadPosY = ext.windowHeight / 2 - ext.padHeight / 2;
             ext.rightPadPosX = ext.windowWidth - ext.blockSize;
             ext.rightPadPosY = ext.leftPadPosY;
             ext.ballPosX = ext.windowWidth / 2;
             ext.ballPosY = ext.windowHeight / 2;
-            //fireNoGoalEvents();
         } else if (collisionOnLeft || collisionOnRight) {
+            int.noGoalHitsCount++;
+
+            if (int.noGoalHitsCount == int.noGoalHitsToSpeedUp) {
+                int.noGoalHitsCount = 0;
+                int.speedIncrement += 0.5;
+                ext.pendingNotifications.push({text:'Game speed increased! [' + int.speedIncrement * 100 + ' %]', type:'warning', delay:1000});
+            }
+
             ext.ballIncrementX *= -1;
         }
     
@@ -119,6 +137,101 @@ function start(gameData) {
             Utils.failSafeSend(gameData.players[i].connection, gameData.externalData);
         }
     }, 1000 / 60);
+}
+
+function calculate() {
+    var leftPadGoesUp;
+    var leftPadGoesDown;
+    var rightPadGoesUp;
+    var rightPadGoesDown;
+
+    var eventCount = gameData.eventQueue.length;
+    for (var i = 0; i < eventCount; i++) {
+        var event = gameData.eventQueue[i]
+        if (!int.leftPlayer) int.leftPlayer = event.playerId;
+        if (!int.rightPlayer) if (event.playerId != int.leftPlayer) int.rightPlayer = event.playerId;
+
+        if (event.playerId == int.rightPlayer) {
+            rightPadGoesUp = event.data.wPressed || event.data.upPressed;
+            rightPadGoesDown = event.data.sPressed || event.data.downPressed;
+        }
+        if (event.playerId == int.leftPlayer) {
+            leftPadGoesUp = event.data.wPressed || event.data.upPressed;;
+            leftPadGoesDown = event.data.sPressed || event.data.downPressed;
+        }
+    }
+    gameData.eventQueue.splice(0, eventCount);
+
+    if (rightPadGoesUp) ext.rightPadPosY -= int.padSpeed;
+    if (rightPadGoesDown) ext.rightPadPosY += int.padSpeed;
+    if (leftPadGoesUp) ext.leftPadPosY -= int.padSpeed;
+    if (leftPadGoesDown) ext.leftPadPosY += int.padSpeed;
+
+    if (ext.rightPadPosY <= ext.blockSize) ext.rightPadPosY = ext.blockSize;
+    if (ext.rightPadPosY + ext.padHeight >= ext.windowHeight - ext.blockSize) ext.rightPadPosY = ext.windowHeight - ext.blockSize - ext.padHeight;
+    if (ext.leftPadPosY <= ext.blockSize) ext.leftPadPosY = ext.blockSize;
+    if (ext.leftPadPosY + ext.padHeight >= ext.windowHeight - ext.blockSize) ext.leftPadPosY = ext.windowHeight - ext.blockSize - ext.padHeight;
+
+    if (ext.ballPosY - ext.ballSize <= ext.blockSize || ext.ballPosY + ext.ballSize >= ext.windowHeight - ext.blockSize) ext.ballIncrementY *= -1;
+
+    var collisionOnRight = ext.ballPosX + ext.ballSize >= ext.windowWidth - ext.blockSize;
+    var collisionOnLeft = ext.ballPosX - ext.ballSize <= ext.blockSize;
+    var isGoalOnRight = collisionOnRight && (ext.rightPadPosY > ext.ballPosY || ext.rightPadPosY + ext.padHeight < ext.ballPosY);
+    var isGoalOnLeft = collisionOnLeft && (ext.leftPadPosY > ext.ballPosY || ext.leftPadPosY + ext.padHeight < ext.ballPosY);
+
+    if (isGoalOnRight) {
+        ext.playerOneScore++;
+        ext.pendingNotifications.push({text:'Goal for left-side player!', type:'alert', delay:1000});
+
+        int.noGoalHitsCount = 0;
+        int.speedIncrement = 1.0;
+        ext.ballIncrementX *= -1;
+
+        ext.leftPadPosX = 0;
+        ext.leftPadPosY = ext.windowHeight / 2 - ext.padHeight / 2;
+        ext.rightPadPosX = ext.windowWidth - ext.blockSize;
+        ext.rightPadPosY = ext.leftPadPosY;
+        ext.ballPosX = ext.windowWidth / 2;
+        ext.ballPosY = ext.windowHeight / 2;
+    } else if (isGoalOnLeft) {
+        ext.playerTwoScore++;
+        ext.pendingNotifications.push({text:'Goal for right-side player!', type:'alert', delay:1000});
+
+        int.noGoalHitsCount = 0;
+        int.speedIncrement = 1.0;
+        ext.ballIncrementX *= -1;
+
+        ext.leftPadPosX = 0;
+        ext.leftPadPosY = ext.windowHeight / 2 - ext.padHeight / 2;
+        ext.rightPadPosX = ext.windowWidth - ext.blockSize;
+        ext.rightPadPosY = ext.leftPadPosY;
+        ext.ballPosX = ext.windowWidth / 2;
+        ext.ballPosY = ext.windowHeight / 2;
+    } else if (collisionOnLeft || collisionOnRight) {
+        int.noGoalHitsCount++;
+
+        if (int.noGoalHitsCount == int.noGoalHitsToSpeedUp) {
+            int.noGoalHitsCount = 0;
+            int.speedIncrement += 0.5;
+            ext.pendingNotifications.push({text:'Game speed increased! [' + int.speedIncrement * 100 + ' %]', type:'warning', delay:1000});
+        }
+
+        ext.ballIncrementX *= -1;
+    }
+
+    if (!isGoalOnLeft && !isGoalOnRight) {
+        ext.ballPosX += ext.ballIncrementX * ext.speedIncrement;
+        ext.ballPosY += ext.ballIncrementY * ext.speedIncrement;
+
+        if (ext.ballPosY + ext.ballSize >= ext.windowHeight - ext.blockSize) ext.ballPosY = ext.windowHeight - ext.blockSize - ext.ballSize;
+        else if (ext.ballPosY - ext.ballSize <= ext.blockSize) ext.ballPosY = ext.blockSize + ext.ballSize;
+        if (ext.ballPosX + ext.ballSize >= ext.windowWidth - ext.blockSize) ext.ballPosX = ext.windowWidth - ext.blockSize - ext.ballSize;
+        else if (ext.ballPosX - ext.ballSize <= ext.blockSize) ext.ballPosX = ext.blockSize + ext.ballSize;
+    }
+
+    for(var i = 0; i<gameData.players.length; i++){
+        Utils.failSafeSend(gameData.players[i].connection, gameData.externalData);
+    }
 }
 
 function fireNoGoalEvents() {

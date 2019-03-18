@@ -15,6 +15,7 @@ function drawGame(gameData) {
 
         playerOneScore = gameData.playerOneScore;
         playerTwoScore = gameData.playerTwoScore;
+        pendingNotifications = gameData.pendingNotifications;
 
         initGameContainer(gameData.windowHeight, gameData.windowWidth);
     }
@@ -23,6 +24,7 @@ function drawGame(gameData) {
     drawScore();
     drawPads();
     drawBall();
+    showNotifications();
 }
 
 function drawLayout() {
@@ -125,4 +127,18 @@ function drawBall() {
         x: ballPosX, y: ballPosY,
         radius: ballSize
     });
+}
+
+function showNotifications(){
+    for(var i=0; i<pendingNotifications.length; i++){
+        switch (pendingNotifications[i].type) {
+            case 'alert':
+                showAlertWithDelay(pendingNotifications[i].text, pendingNotifications[i].delay);
+                break;
+            case 'warning':
+                showWarningWithDelay(pendingNotifications[i].text, pendingNotifications[i].delay);
+                break;
+        }
+    }
+    pendingNotifications = [];
 }

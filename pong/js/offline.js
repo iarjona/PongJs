@@ -42,27 +42,23 @@ function calculateOffline(isAIEnabled) {
 
     if (isGoalOnRight) {
         playerOneScore++;
-        showAlertWithDelay("Goal for player one!", 1000);
+
+        pendingNotifications.push({text:'Goal for player one!', type:'alert', delay:1000});
         fireGoalEvents(isAIEnabled);
     } else if (isGoalOnLeft) {
         playerTwoScore++;
-        isAIEnabled ? showAlertWithDelay("The computer is owning you!", 1000) : showAlertWithDelay("Goal for player two!", 1000);
+
+        var text;
+        if (isAIEnabled) {
+            text = 'The computer is owning you!';
+        } else {
+            text = 'Goal for player two!';
+        }
+        pendingNotifications.push({text:text, type:'alert', delay:1000})
         fireGoalEvents(isAIEnabled);
-    } else if (collisionOnRight) {
-        if (ballPosY <= rightPadPosY + padHeight / 2) {
-
-        } else {
-
-        }
+    } else if (collisionOnRight || collisionOnLeft) {
         fireNoGoalEvents();
-    } else if (collisionOnLeft) {
-        if (ballPosY <= leftPadPosY + padHeight / 2) {
-
-        } else {
-
-        }
-        fireNoGoalEvents();
-    }
+    } 
 
     if (!isGoalOnLeft && !isGoalOnRight) {
         ballPosX += ballIncrementX * speedIncrement;
@@ -81,7 +77,8 @@ function fireNoGoalEvents() {
     if (noGoalHitsCount == noGoalHitsToSpeedUp) {
         noGoalHitsCount = 0;
         speedIncrement += 0.5;
-        showWarningWithDelay("Game speed increased! [" + speedIncrement * 100 + " %]", 1000);
+        var text = "Game speed increased! [" + speedIncrement * 100 + " %]";
+        pendingNotifications.push({text:text, type:'warning', delay: 1000});
     }
 
     ballIncrementX *= -1;

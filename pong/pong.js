@@ -23,6 +23,7 @@ var ballPosX;
 var ballPosY;
 var ballSize = 15;
 var blockSize = 25;
+var pendingNotifications = [];
 
 var textFontSize = 32;
 var textFontStroke = 0.75;

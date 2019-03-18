@@ -5,7 +5,7 @@ function startOnline(){
 }
 
 function configureOnline(){
-    var ws = new WebSocket('ws://localhost');
+    var ws = new WebSocket('ws://' + window.location.hostname);
     var playerId;
     ws.onmessage = function(event){
         try{
