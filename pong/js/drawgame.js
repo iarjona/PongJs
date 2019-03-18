@@ -6,11 +6,23 @@ function drawGame(gameData) {
         rightPadPosX = gameData.rightPadPosX;
         leftPadPosY = gameData.leftPadPosY;
         rightPadPosY = gameData.rightPadPosY;
+
+        blockSize = gameData.blockSize,
+        padHeight = gameData.padHeight,
+        ballPosX = gameData.ballPosX;
+        ballPosY = gameData.ballPosY;
+        ballSize = gameData.ballSize;
+
+        playerOneScore = gameData.playerOneScore;
+        playerTwoScore = gameData.playerTwoScore;
+
+        initGameContainer(gameData.windowHeight, gameData.windowWidth);
     }
-    //drawLayout();
-    //drawScore();
+
+    drawLayout();
+    drawScore();
     drawPads();
-    //drawBall();
+    drawBall();
 }
 
 function drawLayout() {

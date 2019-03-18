@@ -1,5 +1,7 @@
 function startOnline(){
     configureOnline();
+
+    gameLoop = {}; //Avoid resize event
 }
 
 function configureOnline(){
@@ -26,25 +28,6 @@ function configureOnline(){
                         }
                     }, 1000/60);
                 }
-                /*if (data.event && data.event.name == 'ready') {
-                    lobbyId = data.event.value;
-                    console.log(lobbyId);
-                    showInfoWithDelay('Prepare yourself! '+ userName, 1000);
-                    var loop = setInterval(function(){
-                        var data = {wPressed: keyWPressed, sPressed: keySPressed};
-                        var moveData = {sessionId: playerId, lobbyId: lobbyId, data: data};
-                        if (ws.readyState == ws.OPEN) {
-                            if (moveData.data.wPressed || moveData.data.sPressed) {
-                                ws.send(JSON.stringify(moveData));
-                            } else {
-                                console.log('Not sending');
-                            }
-                        } else {
-                            console.log('WebSocket readyState: ', ws.readyState);
-                            clearInterval(loop);
-                        }
-                    }, 1000/60);
-                }*/
             }else{
                 drawGame(data);
             }

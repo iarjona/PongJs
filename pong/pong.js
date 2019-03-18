@@ -71,9 +71,9 @@ $(document).ready(function () {
     handleMenu();
 });
 
-function initGameContainer() {
-    var w = $(window).width() - 25;
-    var h = $(window).height() - 25;
+function initGameContainer(fixedHeight, fixedWidth) {
+    var w = fixedWidth ? fixedWidth : $(window).width() - 25;
+    var h = fixedHeight ? fixedHeight : $(window).height() - 25;
 
     if (w < 800) w = 800;
     if (h < 600) h = 600;
