@@ -11,7 +11,7 @@ function configureOnline(){
         try{
             var data = JSON.parse(event.data);
             if (!playerId){
-                if (data.playerId) {
+                if (data.status && data.status == 'OK') {
                     playerId = data.playerId;
                     showInfoWithDelay('Connected... Finding other player...', 3000);
 
@@ -29,7 +29,15 @@ function configureOnline(){
                     }, 1000/60);
                 }
             }else{
-                drawGame(data);
+                if (data.status == 'KO') {
+                    ws.close();
+                    showErrorWithDelay('Player was disconnected... Reloading game.', 3000);
+                    setTimeout(function(){
+                        location.reload();
+                    }, 5000);
+                } else {
+                    drawGame(data);
+                }
             }
         }catch(ex){
             console.log('Error parsing JSON: '+event.data, ex);
