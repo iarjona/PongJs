@@ -38,9 +38,7 @@ function assignGame(ws) {
     }
 
     if (!assignedGame) {
-        var internalData = { leftPlayer: null, rightPlayer: null };
-        var externalData = { playerOneScore: 0, playerTwoScore: 0 };
-        var newGame = { players: [newPlayer], ready: false, eventQueue: [], internalData, externalData };
+        var newGame = { players: [newPlayer], ready: false, eventQueue: []};
         Game.duelGames.push(newGame);
     }
 
