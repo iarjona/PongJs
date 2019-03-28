@@ -18,7 +18,9 @@ Duel.start = function(gameData){
         speedIncrement: 1.0,
         padHeight: 100,
         blockSize: 25,
-        ballSize: 15
+        ballSize: 15,
+        leftPlayer: gameData.players[0].id,
+        rightPlayer: gameData.players[1].id
     };
 
     //Initial dynamic config.
@@ -43,17 +45,15 @@ function calculate(gameData) {
 
     var eventCount = gameData.eventQueue.length;
     for (var i = 0; i < eventCount; i++) {
-        var event = gameData.eventQueue[i]
-        if (!gameData.context.leftPlayer) gameData.context.leftPlayer = event.playerId;
-        if (!gameData.context.rightPlayer) if (event.playerId != gameData.context.leftPlayer) gameData.context.rightPlayer = event.playerId;
+        var event = gameData.eventQueue[i];
 
         if (event.playerId == gameData.context.rightPlayer) {
-            rightPadGoesUp = event.data.wPressed || event.data.upPressed;
-            rightPadGoesDown = event.data.sPressed || event.data.downPressed;
+            rightPadGoesUp = event.data.goesUp;
+            rightPadGoesDown = event.data.goesDown;
         }
         if (event.playerId == gameData.context.leftPlayer) {
-            leftPadGoesUp = event.data.wPressed || event.data.upPressed;;
-            leftPadGoesDown = event.data.sPressed || event.data.downPressed;
+            leftPadGoesUp = event.data.goesUp;
+            leftPadGoesDown = event.data.goesDown;
         }
     }
     gameData.eventQueue.splice(0, eventCount);

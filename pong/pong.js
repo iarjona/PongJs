@@ -50,11 +50,11 @@ var menuOptions = [
     },
     {
         "title": "Play online!",
-        "mode": "startOnline()"
+        "mode": "startOnline('duel')"
     },
     {
         "title": "Battle Royale!",
-        "mode": "startBattleRoyale()"
+        "mode": "startOnline('battleRoyale')"
     }
 ];
 
