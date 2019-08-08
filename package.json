@@ -17,7 +17,7 @@
   "dependencies": {
     "express": "^4.16.3",
     "jcanvas": "^21.0.1",
-    "jquery": "^3.3.1",
+    "jquery": "^3.4.0",
     "noty": "^3.2.0-beta",
     "ws": "^6.2.0"
   }
