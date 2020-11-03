@@ -1,2 +1,2 @@
 # PongJs
-Basic Javascript videogame using jQuery + jCanvas.
+Basic Javascript videogame using jQuery, jCanvas and WebSockets
